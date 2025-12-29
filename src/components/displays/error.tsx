@@ -103,6 +103,7 @@ export default function Error({ code }: ErrorProps) {
           <div className="flex flex-col gap-2 grow-0">
             <div className="flex flex-col gap-6">
               <p className="break-word">Strava is having issues</p>
+              <p className="break-word text-red-500">Error code: {code ?? "Unknown"}</p>
               <p className="break-word">Please try again later</p>
               <div className="flex gap-12">
                 <p className="text-blue-500 underline hover:cursor-pointer w-fit" onClick={logout}>Logout</p>

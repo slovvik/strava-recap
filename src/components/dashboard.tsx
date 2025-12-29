@@ -16,6 +16,7 @@ import TotalHours from "./charts/totalHours"
 import ActivityCount from "./charts/activityCount"
 import Records from "./charts/records"
 import Distance from "./charts/distance"
+import DistanceByType from "./charts/distanceByType"
 import DistanceRanges from "./charts/distanceRanges"
 import Socials from "./charts/socials"
 import StartTimes from "./charts/startTimes"
@@ -36,6 +37,7 @@ import DistanceVsSpeed from "./charts/distanceVsSpeed"
 
 const GRAPH_COMPONENTS: { id: string, component: React.ReactNode }[] = [
   { id: "distance", component: <Distance /> },
+  { id: "distanceByType", component: <DistanceByType /> },
   { id: "elevation", component: <Elevation /> },
   { id: "activityCount", component: <ActivityCount /> },
   { id: "restDays", component: <RestDays /> },

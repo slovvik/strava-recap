@@ -1,5 +1,10 @@
 import { StravaActivity, StravaAthlete, StravaAthleteZones, StravaGear, StravaPhoto } from "../types/strava"
 
+const getBaseUrl = () => {
+  return process.env.NODE_ENV === "development"
+    ? "/api/strava"
+    : "https://www.strava.com"
+}
 
 export const stravaApi = {
   clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
@@ -26,13 +31,14 @@ export const stravaApi = {
     }).toString()
     return `${baseUrl}?${params}`
   },
-  getData: async (baseUrl: string, method: string, options: { headers?: any, params?: string }): Promise<any> => {
-    const { headers, params } = options
+  getData: async (baseUrl: string, method: string, options: { headers?: any, params?: string, body?: string }): Promise<any> => {
+    const { headers, params, body } = options
     const url = params ? `${baseUrl}?${params}` : baseUrl
     try {
       const res = await fetch(url, {
         method: method,
-        headers: headers ?? {}
+        headers: headers ?? {},
+        body: body
       })
       if (!res.ok) {
         throw new Error(`Failed api call to ${url} <${res.status}>`)
@@ -44,21 +50,24 @@ export const stravaApi = {
     }
   },
   exchangeToken: async (code: string): Promise<{ accessToken: string, athlete: StravaAthlete }> => {
-    const baseUrl = "https://www.strava.com/oauth/token"
-    const params = new URLSearchParams({
+    const baseUrl = `${getBaseUrl()}/oauth/token`
+    const body = new URLSearchParams({
       client_id: stravaApi.clientId,
       client_secret: stravaApi.clientSecret,
       code: code,
       grant_type: "authorization_code"
     }).toString()
-    const data = await stravaApi.getData(baseUrl, "POST", { params: params })
+    const headers = {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+    const data = await stravaApi.getData(baseUrl, "POST", { headers: headers, body: body })
     return {
       accessToken: data.access_token,
       athlete: data.athlete
     }
   },
   getAthlete: async (token: string): Promise<StravaAthlete> => {
-    const baseUrl = "https://www.strava.com/api/v3/athlete"
+    const baseUrl = `${getBaseUrl()}/api/v3/athlete`
     const headers = {
       Authorization: `Bearer ${token}`
     }
@@ -69,7 +78,7 @@ export const stravaApi = {
     const { page = 1, perPage = 200, year = new Date().getFullYear() } = options || {}
     if (year < 2010 || year >= new Date().getFullYear() + 1) return []
     const [beforeDate, afterDate] = [Math.floor(new Date(`${year + 1}-01-01`).getTime() / 1000).toString(), Math.floor(new Date(`${year}-01-01`).getTime() / 1000).toString()]
-    const baseUrl = "https://strava.com/api/v3/athlete/activities"
+    const baseUrl = `${getBaseUrl()}/api/v3/athlete/activities`
     const headers = {
       Authorization: `Bearer ${token}`
     }
@@ -102,7 +111,7 @@ export const stravaApi = {
     return allActivities
   },
   getAthleteZones: async (token: string): Promise<StravaAthleteZones> => {
-    const baseUrl = "https://www.strava.com/api/v3/athlete/zones"
+    const baseUrl = `${getBaseUrl()}/api/v3/athlete/zones`
     const headers = {
       Authorization: `Bearer ${token}`
     }
@@ -110,7 +119,7 @@ export const stravaApi = {
     return data
   },
   getGear: async (token: string, gearId: string): Promise<StravaGear[]> => {
-    const baseUrl = "https://www.strava.com/api/v3/gear"
+    const baseUrl = `${getBaseUrl()}/api/v3/gear`
     const headers = {
       Authorization: `Bearer ${token}`
     }
@@ -118,7 +127,7 @@ export const stravaApi = {
     return data
   },
   getActivityPhotos: async (token: string, activityId: number): Promise<StravaPhoto[]> => {
-    const baseUrl = `https://www.strava.com/api/v3/activities/${activityId}/photos`
+    const baseUrl = `${getBaseUrl()}/api/v3/activities/${activityId}/photos`
     const headers = {
       Authorization: `Bearer ${token}`
     }

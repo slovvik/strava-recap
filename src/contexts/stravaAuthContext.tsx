@@ -77,16 +77,24 @@ export default function StravaAuthContextProvider({ children }: StravaAuthContex
       const urlParams = new URLSearchParams(window.location.search)
       const code = urlParams.get("code")
       if (code) {
-        const data = await stravaApi.exchangeToken(code)
-        if (data) {
-          const { accessToken: token, athlete: user } = data
-          setAccessToken(token)
-          setAthlete(user)
-          setIsAuthenticated(true)
-          storage.set("strava_access_token", token)
-          storage.set("athlete", user)
-          window.history.replaceState({}, document.title, window.location.pathname)
-          track("user has authenticated")
+        // Clear the code from URL immediately to prevent reuse
+        window.history.replaceState({}, document.title, window.location.pathname)
+
+        try {
+          const data = await stravaApi.exchangeToken(code)
+          if (data) {
+            const { accessToken: token, athlete: user } = data
+            setAccessToken(token)
+            setAthlete(user)
+            setIsAuthenticated(true)
+            storage.set("strava_access_token", token)
+            storage.set("athlete", user)
+            track("user has authenticated")
+          }
+        } catch (error) {
+          console.error("Authentication error:", error)
+          // Clear any partial auth state
+          logout()
         }
       }
     }

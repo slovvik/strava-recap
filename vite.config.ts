@@ -10,4 +10,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/api/strava': {
+        target: 'https://www.strava.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/strava/, ''),
+        secure: false,
+      }
+    }
+  }
 })
