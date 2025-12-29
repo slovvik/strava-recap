@@ -78,44 +78,59 @@ export const StravaActivityContext = createContext<StravaActivityContextType>(
 
 
 export const processActivities = (allActivities: StravaActivity[], filters: SportType[]) => {
+  console.log(`[Process] Starting to process ${allActivities.length} activities with ${filters.length} filters`)
+
   const activitiesByMonth: ActivitiesByMonth = createEmptyMonthlyActivities()
   const activitiesByType: ActivitiesByType = {}
   const activitiesWithPhotos: StravaActivity[] = []
   const allSports: Set<SportType> = new Set()
 
-  const filteredActivities = allActivities.reduce((acc, act) => {
-    if (!act.sport_type || !act.start_date || isNaN(new Date(act.start_date).getTime())) {
-      console.warn("Skipping activity with missing/invalid sport_type or start_date: ", act)
-      Sentry.captureException("Skipping activity with missing/invalid sport_type or start_date")
+  const filteredActivities = allActivities.reduce((acc, act, index) => {
+    try {
+      if (!act.sport_type || !act.start_date || isNaN(new Date(act.start_date).getTime())) {
+        console.warn(`[Process] Skipping activity ${index} (id: ${act.id}) - missing sport_type or start_date:`, act)
+        Sentry.captureException("Skipping activity with missing/invalid sport_type or start_date")
+        return acc
+      }
+      const sportType = act.sport_type as SportType
+
+      allSports.add(sportType)
+
+      if (filters.length > 0 && !filters.includes(act.sport_type as SportType)) {
+        return acc
+      }
+
+      // add to sport type
+      if (!activitiesByType[sportType]) {
+        activitiesByType[sportType] = [act]
+      } else {
+        activitiesByType[sportType].push(act)
+      }
+
+      // add to month - force English locale to match MONTHS array
+      const activityMonth = new Date(act.start_date).toLocaleString("en-US", { month: "long" }) as Month
+      if (!activitiesByMonth[activityMonth]) {
+        console.error(`[Process] Invalid month "${activityMonth}" for activity ${index} (id: ${act.id}), date: ${act.start_date}`)
+        throw new Error(`Invalid month: ${activityMonth}`)
+      }
+      activitiesByMonth[activityMonth].push(act)
+
+      // add to photo
+      if (act.total_photo_count && act.total_photo_count > 0) {
+        activitiesWithPhotos.push(act)
+      }
+
+      acc.push(act)
       return acc
+    } catch (err) {
+      console.error(`[Process] Error processing activity ${index} (id: ${act.id}):`, err, act)
+      throw err
     }
-    const sportType = act.sport_type as SportType
-
-    allSports.add(sportType)
-
-    if (filters.length > 0 && !filters.includes(act.sport_type as SportType)) {
-      return acc
-    }
-
-    // add to sport type
-    if (!activitiesByType[sportType]) {
-      activitiesByType[sportType] = [act]
-    } else {
-      activitiesByType[sportType].push(act)
-    }
-
-    // add to month
-    const activityMonth = new Date(act.start_date).toLocaleString("default", { month: "long" }) as Month
-    activitiesByMonth[activityMonth].push(act)
-
-    // add to photo
-    if (act.total_photo_count && act.total_photo_count > 0) {
-      activitiesWithPhotos.push(act)
-    }
-
-    acc.push(act)
-    return acc
   }, [] as StravaActivity[])
+
+  console.log(`[Process] Successfully processed ${filteredActivities.length} activities`)
+  console.log(`[Process] Found ${allSports.size} unique sport types:`, Array.from(allSports))
+  console.log(`[Process] Activities with photos: ${activitiesWithPhotos.length}`)
 
   return {
     all: filteredActivities,
@@ -220,7 +235,10 @@ export default function StravaActivityContextProvider({ children }: { children: 
   })
 
   const activitiesData = useMemo(() => {
+    console.log(`[useMemo] Processing activities data - count: ${allActivityData?.length || 0}, filters: ${filters.length}`)
+
     if (!allActivityData || allActivityData.length === 0) {
+      console.log(`[useMemo] No activities to process`)
       return {
         all: [],
         byMonth: createEmptyMonthlyActivities(),
@@ -234,9 +252,11 @@ export default function StravaActivityContextProvider({ children }: { children: 
         const actWithPhoto = withPhotos[Math.floor(Math.random() * withPhotos.length)]
         setActivityPhoto(actWithPhoto)
       }
+      console.log(`[useMemo] Successfully created activitiesData with ${all.length} activities`)
       return { all, byMonth, byType }
     } catch (err) {
-      console.warn("Error processing activities data")
+      console.error("[useMemo] Error processing activities data:", err)
+      console.error("[useMemo] Stack trace:", (err as Error).stack)
       Sentry.captureException(err)
       return {
         all: [],
