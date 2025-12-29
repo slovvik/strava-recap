@@ -1,5 +1,4 @@
 import { useEffect } from "react"
-import { Analytics } from "@vercel/analytics/react"
 
 import ThemeContextProvider from "./contexts/themeContext"
 import StravaAuthContextProvider from "./contexts/stravaAuthContext"
@@ -33,7 +32,6 @@ const Content = () => {
     return (
       <div>
         <Unauthenticated />
-        <Analytics mode="production" />
       </div>
     )
   }

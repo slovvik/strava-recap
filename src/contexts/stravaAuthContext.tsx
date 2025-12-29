@@ -3,7 +3,6 @@ import { StravaAthlete } from "../types/strava"
 import { stravaApi } from "../services/api"
 import { useQuery } from "@tanstack/react-query"
 import { storage } from "../utils/utils"
-import { track } from '@vercel/analytics'
 
 
 interface StravaAuthContextType {
@@ -63,7 +62,6 @@ export default function StravaAuthContextProvider({ children }: StravaAuthContex
     setIsAuthenticated(false)
     storage.remove("strava_access_token")
     storage.remove("athlete")
-    track("user has logged out")
   }, [])
 
   const updateStravaAthlete = useCallback((athlete: StravaAthlete) => {
@@ -89,7 +87,6 @@ export default function StravaAuthContextProvider({ children }: StravaAuthContex
             setIsAuthenticated(true)
             storage.set("strava_access_token", token)
             storage.set("athlete", user)
-            track("user has authenticated")
           }
         } catch (error) {
           console.error("Authentication error:", error)

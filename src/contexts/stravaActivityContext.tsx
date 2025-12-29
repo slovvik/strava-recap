@@ -8,7 +8,6 @@ import { useCurrentYearContext } from "../hooks/useCurrentYearContext"
 import { useThemeContext } from "../hooks/useThemeContext"
 import { generateColorPalette, storage } from "../utils/utils"
 import * as Sentry from "@sentry/browser"
-import { track } from "@vercel/analytics"
 
 
 export const createEmptyMonthlyActivities = () => {
@@ -226,11 +225,6 @@ export default function StravaActivityContextProvider({ children }: { children: 
         const actWithPhoto = withPhotos[Math.floor(Math.random() * withPhotos.length)]
         setActivityPhoto(actWithPhoto)
       }
-      track("successfully processed activities", {
-        currentYear: currentYear,
-        numActivities: all.length,
-        numSports: allSports.length
-      })
       return { all, byMonth, byType }
     } catch (err) {
       console.warn("Error processing activities data")
@@ -377,9 +371,6 @@ export default function StravaActivityContextProvider({ children }: { children: 
   const updateUnits = (unit: Units) => {
     setUnits(unit)
     storage.set<string>("units", unit)
-    track("changed unit", {
-      unit: unit
-    })
   }
 
   return (

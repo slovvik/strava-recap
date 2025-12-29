@@ -2,9 +2,7 @@ import { useMemo, useState } from "react"
 import { useStravaActivityContext } from "../hooks/useStravaActivityContext"
 import Loading from "./displays/loading"
 import Error from "./displays/error"
-import { Analytics } from "@vercel/analytics/react"
 import { useThemeContext } from "../hooks/useThemeContext"
-import { track } from "@vercel/analytics"
 import { RefreshCw } from 'lucide-react'
 
 import DailyActivities from "./charts/dailyActivities"
@@ -83,14 +81,12 @@ export default function Dashboard() {
 
   const toggleShuffle = () => {
     setShuffle(prevState => !prevState)
-    track("shuffled graphs")
   }
 
   if (activitiesLoading) {
     return (
       <div>
         <Loading />
-        <Analytics mode="production" />
       </div>
     )
   }
@@ -102,14 +98,9 @@ export default function Dashboard() {
     if (errorCode === 429 && activitiesData && activitiesData.all.length > 0) {
       // Continue to dashboard with banner
     } else {
-      track("activitiesError", {
-        error: String(activitiesError),
-        errorCode: errorCode,
-      })
       return (
         <div>
           <Error message={activitiesError.message} code={errorCode} />
-          <Analytics mode="production" />
         </div>
       )
     }
@@ -120,7 +111,6 @@ export default function Dashboard() {
     return (
       <div>
         <NoActivities />
-        <Analytics mode="production" />
       </div>
     )
   }

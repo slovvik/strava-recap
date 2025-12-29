@@ -24,7 +24,6 @@ import { ChevronDown } from "lucide-react"
 import { useStravaActivityContext } from "../../hooks/useStravaActivityContext"
 import { Themes, Theme } from "../../contexts/themeContext"
 import { Checkbox } from "../ui/checkbox"
-import { track } from "@vercel/analytics"
 
 
 type MenuProps = {
@@ -45,14 +44,11 @@ export default function Menu({ shuffle }: MenuProps) {
         return [...prev, sport]
       }
     })
-    track("toggled filter", {
-      sport: sport
-    })
   }
 
   return (
     <div >
-      <DropdownMenu modal={false} onOpenChange={(open) => open ? track("opened menu") : null}>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <div className="flex items-center gap-2 hover:cursor-pointer">
             <img
@@ -75,7 +71,6 @@ export default function Menu({ shuffle }: MenuProps) {
                 href={`https://www.strava.com/athletes/${athlete.id}`}
                 target="_blank"
                 rel="noreferrer noopener"
-                onClick={() => track("opened profile")}
               >
                 Strava Profile
               </a>
@@ -220,7 +215,7 @@ export default function Menu({ shuffle }: MenuProps) {
               open={openAboutDialog}
               onOpenChange={setOpenAboutDialog}
               trigger={
-                <p onClick={() => { setOpenAboutDialog(true), track("opened about") }} className="w-full">About</p>
+                <p onClick={() => setOpenAboutDialog(true)} className="w-full">About</p>
               }
             />
           </DropdownMenuItem>
@@ -234,7 +229,6 @@ export default function Menu({ shuffle }: MenuProps) {
               href="https://www.buymeacoffee.com/atefkbenothman"
               target="_blank"
               className="w-full"
-              onClick={() => track("opened donate")}
             >
               Donate
             </a>

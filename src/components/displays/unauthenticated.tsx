@@ -5,7 +5,6 @@ import { AboutDialog } from "../common/aboutDialog"
 import { Info } from "lucide-react"
 import connectWithStravaLogo from "/connect-with-strava.svg"
 import { useCurrentYearContext } from "../../hooks/useCurrentYearContext"
-import { track } from "@vercel/analytics"
 
 
 const emojis = [
@@ -54,7 +53,6 @@ export default function Unauthenticated() {
   }
 
   useEffect(() => {
-    track("user on login page")
   }, [])
 
   if (showAthleteLimitError) {
@@ -119,7 +117,6 @@ export default function Unauthenticated() {
             strokeWidth={2}
             color={darkMode ? "#ebebeb" : "#525252"}
             className="hover:cursor-pointer hover:scale-125 fixed bottom-6 right-6"
-            onClick={() => track("opened about")}
           />
         }
       />
