@@ -15,7 +15,8 @@ export const Themes = {
   Ember: ["#690000", "#990000", "#b81810", "#d7301f", "#ef6548", "#bd6943", "#dd7b4e", "#fc8d59", "#fdbb84", "#fdd49e", "#fde2bd", "#fdebd2", "#fdf1e0"],
   Forest: ["#08302e", "#06413a", "#03594a", "#007b5e", "#03a071", "#15c182", "#28f699", "#65ffab", "#9effc5", "#cafcdc"],
   Lilac: ["#1e1c4a", "#24216b", "#35319d", "#4e49e2", "#666cee", "#8391f6", "#a7b7fa", "#c8d4fd", "#e1e8fe", "#eef2ff"],
-  Amber: ["#fc6d11", "#f45616", "#eb3f1b", "#bc3b25", "#2d2e40", "#3d3144", "#4c3348", "#69223b", "#771a35", "#85112e"]
+  Amber: ["#fc6d11", "#f45616", "#eb3f1b", "#bc3b25", "#2d2e40", "#3d3144", "#4c3348", "#69223b", "#771a35", "#85112e"],
+  Strava: ["#FC4C02", "#E8112D", "#FF6B35", "#FFA500", "#FFD700", "#FF1744", "#D84315", "#BF360C", "#FF8A65", "#FFAB91", "#8D6E63", "#6D4C41", "#5D4037"]
 } as const
 
 export type Theme = keyof typeof Themes

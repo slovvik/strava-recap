@@ -120,10 +120,9 @@ export default function Elevation() {
                 dataKey={sport}
                 fill={colorPalette[sport as SportType]}
                 label={{
-                  position: "top",
+                  position: "insideTop",
                   fontSize: 9,
-                  color: darkMode ? "#c2c2c2" : "#666",
-                  fill: darkMode ? "#c2c2c2" : "#666",
+                  fill: "#ffffff",
                   formatter: (value: number) => value > 0 ? Number(value).toFixed(0) : ''
                 }}
                 isAnimationActive={false}

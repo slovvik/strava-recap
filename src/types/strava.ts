@@ -151,6 +151,26 @@ export type StravaActivity = {
   suffer_score?: number
 }
 
+export type SegmentEffort = {
+  id: number
+  name: string
+  activity_id: number
+  segment: {
+    id: number
+    name: string
+  }
+  pr_rank: number | null      // Rank among YOUR efforts
+  kom_rank: number | null      // Rank among ALL athletes (1 = KOM)
+  moving_time: number
+  elapsed_time: number
+  start_date: string
+  start_date_local: string
+}
+
+export type DetailedStravaActivity = StravaActivity & {
+  segment_efforts?: SegmentEffort[]
+}
+
 export type SportType =
   | "Run"
   | "TrailRun"

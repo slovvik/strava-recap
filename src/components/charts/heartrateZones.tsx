@@ -5,11 +5,11 @@ import { useStravaActivityContext } from "../../hooks/useStravaActivityContext"
 import NoData from "../common/noData"
 import { useThemeContext } from "../../hooks/useThemeContext"
 import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
   ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Legend,
   Tooltip
 } from "recharts"
@@ -65,7 +65,7 @@ export const calculateHeartrateZones = (
   return hasHrData ? zones : []
 }
 
-const CustomRadarTooltip = ({ active, payload }: TooltipProps) => {
+const CustomBarTooltip = ({ active, payload }: TooltipProps) => {
   if (!active || !payload) return null
 
   const zoneName = payload[0].payload.zoneName ?? ""
@@ -79,7 +79,7 @@ const CustomRadarTooltip = ({ active, payload }: TooltipProps) => {
 
           return (
             <p key={idx} style={{ color: p.color }}>
-              {p.name}: <span className="font-semibold">{Number(value.toFixed(2))}</span>
+              {p.name}: <span className="font-semibold">{Number(value.toFixed(2))}h</span>
             </p>
           )
         })}
@@ -108,16 +108,13 @@ export default function HeartrateZones() {
   }, [activitiesData, athleteZonesData])
 
   const chartConfig = useMemo(() => ({
-    polarGridStyle: {
-      gridType: "polygon" as const,
-      strokeOpacity: 0.3,
-      strokeWidth: 2
+    xAxisStyle: {
+      fontSize: 12,
+      fill: darkMode ? "#c2c2c2" : "#666"
     },
-    angleAxisStyle: {
-      fontSize: 10,
-      tick: {
-        fill: darkMode ? "#c2c2c2" : ""
-      }
+    yAxisStyle: {
+      fontSize: 12,
+      fill: darkMode ? "#c2c2c2" : "#666"
     },
     tooltipStyle: {
       cursor: {
@@ -146,32 +143,41 @@ export default function HeartrateZones() {
       icon={<Activity size={16} strokeWidth={2} />}
     >
       <ResponsiveContainer height={350} width="90%">
-        <RadarChart outerRadius="80%" data={data}>
-          <PolarGrid {...chartConfig.polarGridStyle} />
-          <PolarAngleAxis
-            dataKey="zoneName"
-            {...chartConfig.angleAxisStyle}
+        <BarChart data={data}>
+          <XAxis
             type="category"
+            dataKey="zoneName"
+            tick={chartConfig.xAxisStyle}
+            stroke={darkMode ? "#c2c2c2" : "#666"}
+          />
+          <YAxis
+            tick={chartConfig.yAxisStyle}
+            stroke={darkMode ? "#c2c2c2" : "#666"}
+            label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fill: darkMode ? "#c2c2c2" : "#666" } }}
+          />
+          <Tooltip
+            content={CustomBarTooltip}
+            cursor={chartConfig.tooltipStyle.cursor}
           />
           {activitiesData?.byType &&
             Object.keys(activitiesData.byType).map((sport, idx) => (
-              <Radar
-                key={`radar-${idx}`}
-                name={sport}
+              <Bar
+                key={`bar-${idx}`}
+                radius={[4, 4, 4, 4]}
+                stackId="stack"
                 dataKey={sport}
-                stroke={colorPalette[sport as SportType]}
-                strokeWidth={2}
                 fill={colorPalette[sport as SportType]}
-                fillOpacity={0.6}
+                label={{
+                  position: "insideTop",
+                  fontSize: 9,
+                  fill: "#ffffff",
+                  formatter: (value: number) => value > 0 ? Number(value).toFixed(1) : ''
+                }}
                 isAnimationActive={false}
               />
             ))}
           <Legend />
-          <Tooltip
-            content={CustomRadarTooltip}
-            cursor={chartConfig.tooltipStyle.cursor}
-          />
-        </RadarChart>
+        </BarChart>
       </ResponsiveContainer>
     </Card>
   )

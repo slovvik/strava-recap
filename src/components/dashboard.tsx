@@ -5,6 +5,7 @@ import Error from "./displays/error"
 import { Analytics } from "@vercel/analytics/react"
 import { useThemeContext } from "../hooks/useThemeContext"
 import { track } from "@vercel/analytics"
+import { RefreshCw } from 'lucide-react'
 
 import DailyActivities from "./charts/dailyActivities"
 import Navbar from "./nav/navbar"
@@ -29,15 +30,16 @@ import HeartrateVsSpeed from "./charts/heartrateVsSpeed"
 import PrsOverTime from "./charts/prsOverTime"
 import RestDays from "./charts/restDays"
 import HeartrateZones from "./charts/heartrateZones"
-import Photo from "./charts/photo"
 import DistanceVsPower from "./charts/distanceVsPower"
 import TemperatureVsSpeed from "./charts/tempVsSpeed"
 import DistanceVsSpeed from "./charts/distanceVsSpeed"
+import KomsOverTime from "./charts/komsOverTime"
 
 
 const GRAPH_COMPONENTS: { id: string, component: React.ReactNode }[] = [
   { id: "distance", component: <Distance /> },
   { id: "distanceByType", component: <DistanceByType /> },
+  { id: "komsOverTime", component: <KomsOverTime /> },
   { id: "elevation", component: <Elevation /> },
   { id: "activityCount", component: <ActivityCount /> },
   { id: "restDays", component: <RestDays /> },
@@ -47,7 +49,6 @@ const GRAPH_COMPONENTS: { id: string, component: React.ReactNode }[] = [
   { id: "streaks", component: <Streaks /> },
   { id: "socials", component: <Socials /> },
   { id: "biggestActivity", component: <BiggestActivity /> },
-  { id: "photo", component: <Photo /> },
   { id: "startTimes", component: <StartTimes /> },
   { id: "prsOverTime", component: <PrsOverTime /> },
   { id: "distanceRanges", component: <DistanceRanges /> },
@@ -65,7 +66,9 @@ export default function Dashboard() {
   const {
     activitiesData,
     activitiesLoading,
-    activitiesError
+    activitiesError,
+    activitiesFromCache,
+    retryFetchActivities
   } = useStravaActivityContext()
   const { darkMode } = useThemeContext()
 
@@ -94,16 +97,22 @@ export default function Dashboard() {
 
   if (activitiesError) {
     const errorCode = parseInt(activitiesError.message.slice(activitiesError.message.indexOf('<') + 1, activitiesError.message.indexOf('>')), 10) || null
-    track("activitiesError", {
-      error: String(activitiesError),
-      errorCode: errorCode,
-    })
-    return (
-      <div>
-        <Error message={activitiesError.message} code={errorCode} />
-        <Analytics mode="production" />
-      </div>
-    )
+
+    // Only show 429 error if we don't have cached data
+    if (errorCode === 429 && activitiesData && activitiesData.all.length > 0) {
+      // Continue to dashboard with banner
+    } else {
+      track("activitiesError", {
+        error: String(activitiesError),
+        errorCode: errorCode,
+      })
+      return (
+        <div>
+          <Error message={activitiesError.message} code={errorCode} />
+          <Analytics mode="production" />
+        </div>
+      )
+    }
   }
 
   // succesfully authenticated but user has no activities
@@ -118,17 +127,40 @@ export default function Dashboard() {
 
   return (
     <div
-      className={`w-screen h-screen dark:bg-[#121212] dark:text-white ${
+      className={`w-full h-screen overflow-x-hidden dark:bg-[#121212] dark:text-white ${
         darkMode && "dark"
       }`}
     >
-      <div className="flex flex-col w-full h-full">
+      <div className="flex flex-col w-full h-full overflow-x-hidden">
         <div className="flex flex-col px-2 pt-1 pb-2 gap-1 h-fit w-full dark:bg-[#121212] dark:text-white">
           <Navbar toggleShuffle={toggleShuffle} />
 
+          {/* Rate limit banner */}
+          {activitiesFromCache && (
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 p-3 rounded">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                    Rate Limited - Showing Cached Data
+                  </p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                    Strava's API rate limit was hit. Displaying your last cached activities.
+                  </p>
+                </div>
+                <button
+                  onClick={retryFetchActivities}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded transition-colors"
+                >
+                  <RefreshCw size={14} />
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col h-fit w-full">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-2 w-full">
-              <div className="bg-[#efefef] dark:bg-[#1e2223] col-span-1 sm:col-span-2 rounded">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-2 w-full max-w-full">
+              <div className="bg-[#efefef] dark:bg-[#1e2223] col-span-1 sm:col-span-3 rounded">
                 <DailyActivities />
               </div>
               {shuffleGraphComponents.map(({ id, component }) => (
@@ -150,8 +182,9 @@ export default function Dashboard() {
             className="underline underline-offset-4"
             target="_blank"
           >
-            Kai
+            Kar
           </a>
+          {" "}modyfied by slovvik
         </div>
       </div>
     </div>

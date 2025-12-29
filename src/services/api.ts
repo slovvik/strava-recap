@@ -1,4 +1,4 @@
-import { StravaActivity, StravaAthlete, StravaAthleteZones, StravaGear, StravaPhoto } from "../types/strava"
+import { StravaActivity, StravaAthlete, StravaAthleteZones, StravaGear, StravaPhoto, DetailedStravaActivity } from "../types/strava"
 
 const getBaseUrl = () => {
   return process.env.NODE_ENV === "development"
@@ -134,6 +134,17 @@ export const stravaApi = {
     const params = new URLSearchParams({
       size: "2000",
       photo_sources: "true"
+    }).toString()
+    const data = await stravaApi.getData(baseUrl, "GET", { headers: headers, params: params })
+    return data
+  },
+  getActivityDetails: async (token: string, activityId: number): Promise<DetailedStravaActivity> => {
+    const baseUrl = `${getBaseUrl()}/api/v3/activities/${activityId}`
+    const headers = {
+      Authorization: `Bearer ${token}`
+    }
+    const params = new URLSearchParams({
+      include_all_efforts: "true"
     }).toString()
     const data = await stravaApi.getData(baseUrl, "GET", { headers: headers, params: params })
     return data
