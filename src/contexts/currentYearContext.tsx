@@ -20,10 +20,16 @@ export default function CurrentYearContextProvider({ children }: CurrentYearCont
     const pathYear = Number(window.location.pathname.split("/")[1])
     const currentYearNow = new Date().getFullYear()
 
+    console.log(`[Year] Parsing URL path: ${window.location.pathname}`)
+    console.log(`[Year] Extracted year from path: ${pathYear}`)
+
     // If parsing fails, returns NaN, 0, or invalid year, default to current year
     if (isNaN(pathYear) || pathYear === 0 || pathYear < 2000 || pathYear > currentYearNow) {
+      console.log(`[Year] Invalid year detected, defaulting to current year: ${currentYearNow}`)
       return currentYearNow
     }
+
+    console.log(`[Year] Using year: ${pathYear}`)
     return pathYear
   }
 

@@ -157,8 +157,13 @@ export default function StravaActivityContextProvider({ children }: { children: 
   } = useQuery({
     queryKey: [currentYear],
     queryFn: async () => {
+      console.log(`[Context] Fetching activities for year: ${currentYear}`)
+      console.log(`[Context] Auth state - isAuthenticated: ${isAuthenticated}, hasToken: ${!!accessToken}`)
+
       try {
         const data = await stravaApi.getAllActivities(accessToken!, currentYear)
+
+        console.log(`[Context] Successfully fetched ${data.length} activities for ${currentYear}`)
 
         // Cache successful fetch
         storage.set(`activities_cache_${currentYear}`, data)
@@ -166,10 +171,13 @@ export default function StravaActivityContextProvider({ children }: { children: 
 
         return data
       } catch (err: any) {
+        console.error(`[Context] Error fetching activities:`, err)
+
         // On 429, load from cache instead of throwing
         if (err.message && err.message.includes('429')) {
-          console.warn('Rate limited - loading cached activities')
+          console.warn('[Context] Rate limited - loading cached activities')
           const cached = storage.get<StravaActivity[]>(`activities_cache_${currentYear}`, [])
+          console.log(`[Context] Found ${cached.length} cached activities`)
           if (cached && cached.length > 0) {
             setActivitiesFromCache(true)
             return cached

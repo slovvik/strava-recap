@@ -78,9 +78,18 @@ export const stravaApi = {
     const { page = 1, perPage = 200, year = new Date().getFullYear() } = options || {}
     // Validate year: must be between 2000 and current year (Strava founded in 2009, but allow some buffer)
     const currentYear = new Date().getFullYear()
-    if (year < 2000 || year > currentYear) return []
+
+    console.log(`[API] getActivities called with year: ${year}, page: ${page}`)
+
+    if (year < 2000 || year > currentYear) {
+      console.warn(`[API] Year ${year} is invalid (must be 2000-${currentYear}), returning empty array`)
+      return []
+    }
 
     const [beforeDate, afterDate] = [Math.floor(new Date(`${year + 1}-01-01`).getTime() / 1000).toString(), Math.floor(new Date(`${year}-01-01`).getTime() / 1000).toString()]
+
+    console.log(`[API] Fetching activities after ${new Date(parseInt(afterDate) * 1000).toISOString()} and before ${new Date(parseInt(beforeDate) * 1000).toISOString()}`)
+
     const baseUrl = `${getBaseUrl()}/api/v3/athlete/activities`
     const headers = {
       Authorization: `Bearer ${token}`
@@ -91,7 +100,13 @@ export const stravaApi = {
       page: page.toString(),
       per_page: perPage.toString()
     }).toString()
+
+    console.log(`[API] Request URL: ${baseUrl}?${params}`)
+
     const data = await stravaApi.getData(baseUrl, "GET", { headers: headers, params: params })
+
+    console.log(`[API] Received ${data.length} activities for year ${year}, page ${page}`)
+
     return data.reverse()
   },
   getAllActivities: async (token: string, year: number): Promise<StravaActivity[]> => {
