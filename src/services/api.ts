@@ -76,7 +76,10 @@ export const stravaApi = {
   },
   getActivities: async (token: string, options?: { page?: number, perPage?: number, year?: number }): Promise<StravaActivity[]> => {
     const { page = 1, perPage = 200, year = new Date().getFullYear() } = options || {}
-    if (year < 2010 || year >= new Date().getFullYear() + 1) return []
+    // Validate year: must be between 2000 and current year (Strava founded in 2009, but allow some buffer)
+    const currentYear = new Date().getFullYear()
+    if (year < 2000 || year > currentYear) return []
+
     const [beforeDate, afterDate] = [Math.floor(new Date(`${year + 1}-01-01`).getTime() / 1000).toString(), Math.floor(new Date(`${year}-01-01`).getTime() / 1000).toString()]
     const baseUrl = `${getBaseUrl()}/api/v3/athlete/activities`
     const headers = {

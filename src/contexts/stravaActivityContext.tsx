@@ -178,7 +178,8 @@ export default function StravaActivityContextProvider({ children }: { children: 
         throw err
       }
     },
-    enabled: isAuthenticated && !!accessToken,
+    // Only fetch if authenticated AND year is valid (not 0, not too old, not in future)
+    enabled: isAuthenticated && !!accessToken && currentYear >= 2000 && currentYear <= new Date().getFullYear(),
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60 * 24,
     retry: false,

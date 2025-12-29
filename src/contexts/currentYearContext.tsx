@@ -16,13 +16,32 @@ type CurrentYearContextProviderProps = {
 }
 
 export default function CurrentYearContextProvider({ children }: CurrentYearContextProviderProps) {
-  const [currentYear, setCurrentYear] = useState<number>(Number(window.location.pathname.split("/")[1]) || 0)
+  const getYearFromPath = () => {
+    const pathYear = Number(window.location.pathname.split("/")[1])
+    const currentYearNow = new Date().getFullYear()
 
-  // redirect to this year if no year was set in the url path
+    // If parsing fails, returns NaN, 0, or invalid year, default to current year
+    if (isNaN(pathYear) || pathYear === 0 || pathYear < 2000 || pathYear > currentYearNow) {
+      return currentYearNow
+    }
+    return pathYear
+  }
+
+  const [currentYear, setCurrentYear] = useState<number>(getYearFromPath())
+
+  // redirect to this year if no year was set in the url path or year is invalid
   useEffect(() => {
-    if (window.location.pathname === "/") {
-      const year = new Date().getFullYear()
-      updateYear(year)
+    const pathYear = Number(window.location.pathname.split("/")[1])
+    const currentYearNow = new Date().getFullYear()
+
+    if (
+      window.location.pathname === "/" ||
+      isNaN(pathYear) ||
+      pathYear === 0 ||
+      pathYear < 2000 ||
+      pathYear > currentYearNow
+    ) {
+      updateYear(currentYearNow)
     }
   }, [])
 
